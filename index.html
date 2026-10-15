@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1X-PREDICTOR V5.1 | Server Sync</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0d0d0d;
+            color: #00ff00;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        input:focus {
+            border-color: #00ff00;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        button:active {
+            background-color: #00cc00;
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .terminal {
+            background-color: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 20px;
+            display: none;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .ok { color: #00ff00; }
+        .warn { color: #ffcc00; }
+        .error { color: #ff3333; font-weight: bold; text-shadow: 0 0 5px #ff3333; }
+        .system { color: #00ccff; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            border: 2px solid #ff3333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+        }
+
+        .modal h2 {
+            color: #ff3333;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal button {
+            background-color: #ff3333;
+            color: #fff;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 999;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>PREDICTOR [AI] v5.1</h1>
+            <p>1xBet API Synchronization Server</p>
+        </div>
+
+        <div class="input-group" id="inputSection">
+            <input type="number" id="accountId" placeholder="Enter 1xBet Account ID" required>
+            <button id="connectBtn" onclick="startConnection()">CONNECT TO SERVER</button>
+        </div>
+
+        <div class="terminal" id="terminal">
+            <!-- Logs will appear here -->
+        </div>
+    </div>
+
+    <!-- Modal for Error -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="errorModal">
+        <h2>⚠️ CONNECTION FAILED</h2>
+        <p>Your 1xBet wallet balance is empty (0.00 PHP).</p>
+        <p>The system requires a minimum starting capital of <b>350 PHP</b> to latch onto the betting algorithms.</p>
+        <p>Please cash in the minimum amount and contact your admin to restart the sync.</p>
+        <button onclick="closeModal()">CLOSE</button>
+    </div>
+
+    <script>
+        const logs = [
+            { text: "[SYSTEM] Initializing connection to 1X-SERVER [Asia/PH]...", type: "system", delay: 1000 },
+            { text: "[OK] Server ping response: 24ms.", type: "ok", delay: 800 },
+            { text: "[SYSTEM] Verifying Account ID...", type: "system", delay: 1500 },
+            { text: "[OK] Account found. Status: ACTIVE.", type: "ok", delay: 1000 },
+            { text: "[SYSTEM] Bypassing server encryption protocols...", type: "system", delay: 2000 },
+            { text: "[OK] Firewall bypassed successfully.", type: "ok", delay: 1200 },
+            { text: "[SYSTEM] Injecting AI Predictor Script (v5.1)...", type: "system", delay: 2500 },
+            { text: "[OK] Script injected. Preparing synchronization...", type: "ok", delay: 1000 },
+            { text: "[WARN] Scanning wallet balance for synchronization lock...", type: "warn", delay: 3000 },
+            { text: "[ERROR] FATAL ERROR: Balance is 0.00 PHP.", type: "error", delay: 1500 },
+            { text: "[ERROR] System automatically blocked empty account from main server.", type: "error", delay: 1000 },
+            { text: "[SYSTEM] Minimum 350 PHP positive balance required to bypass algorithm.", type: "system", delay: 1000 },
+            { text: "[ERROR] STATUS: DISCONNECTED. Sync Aborted.", type: "error blink", delay: 500 }
+        ];
+
+        function startConnection() {
+            const accId = document.getElementById('accountId').value;
+            if(!accId) {
+                alert("Please enter your Account ID first!");
+                return;
+            }
+
+            document.getElementById('connectBtn').innerText = "CONNECTING...";
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('accountId').disabled = true;
+            
+            const terminal = document.getElementById('terminal');
+            terminal.style.display = "block";
+            terminal.innerHTML = "";
+
+            let totalTime = 0;
+
+            logs.forEach((log, index) => {
+                totalTime += log.delay;
+                setTimeout(() => {
+                    appendLog(log.text, log.type);
+                    if (index === logs.length - 1) {
+                        setTimeout(showErrorModal, 1500); // Show popup after last log
+                    }
+                }, totalTime);
+            });
+        }
+
+        function appendLog(text, type) {
+            const terminal = document.getElementById('terminal');
+            const p = document.createElement('p');
+            p.className = `log-line ${type}`;
+            p.innerText = text;
+            terminal.appendChild(p);
+            terminal.scrollTop = terminal.scrollHeight; // Auto-scroll to bottom
+        }
+
+        function showErrorModal() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('errorModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('errorModal').style.display = 'none';
+            document.getElementById('connectBtn').innerText = "CONNECT TO SERVER";
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('accountId').disabled = false;
+        }
+    </script>
+</body>
+</html>
