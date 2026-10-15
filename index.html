@@ -83,7 +83,7 @@
         .status.online { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
         .status.offline { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
 
-        .input-group { margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; font-size: 13px; color: #8b92a5; margin-bottom: 8px; }
         
         input {
@@ -96,8 +96,20 @@
             font-size: 16px;
             outline: none;
             text-align: center;
+            letter-spacing: 2px;
+            font-weight: 600;
+            transition: 0.3s;
         }
         input:focus { border-color: #00ff88; }
+        input.error { border-color: #ff4757; background: rgba(255, 71, 87, 0.05); }
+
+        .error-msg {
+            color: #ff4757;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+            display: none;
+        }
 
         .btn {
             width: 100%;
@@ -212,7 +224,10 @@
 
         <div class="input-group">
             <label>1xBet Account ID</label>
-            <input type="number" id="accId" placeholder="e.g. 54329184">
+            <!-- Атрибуты inputmode, maxlength и oninput не дают ввести ничего кроме 10 цифр -->
+            <input type="text" id="accId" inputmode="numeric" maxlength="10" placeholder="e.g. 1835928174" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, ''); hideError();">
+            <div class="error-msg" id="errorMsg">Account ID must be exactly 10 digits</div>
         </div>
 
         <button class="btn" onclick="startSync()">CONNECT</button>
@@ -254,47 +269,54 @@
                 <div class="method">Bank</div>
             </div>
 
-            <!-- ВСТАВЬ СЮДА СВОЮ ССЫЛКУ ИЛИ ОСТАВЬ ТАК -->
-            <button class="btn" onclick="window.location.href='https://refpa49168.com/L?tag=d_3316638m_14189c_&site=3316638&ad=14189&r=registration'">CASH IN NOW</button>
+            <button class="btn" onclick="window.location.href='https://1xbet.ph/'">CASH IN NOW</button>
         </div>
     </div>
 
 
     <script>
-        const logs = [
-            { t: "[SYS] Initializing server connection (Asia/Manila)...", type: "sys", d: 800 },
-            { t: "[OK] Server ping response: 18ms", type: "ok", d: 600 },
-            { t: "[SYS] Verifying Account ID...", type: "sys", d: 1000 },
-            { t: "[OK] Account located. Status: ACTIVE", type: "ok", d: 800 },
-            { t: "[SYS] Bypassing 1xBet API firewalls...", type: "sys", d: 1500 },
-            { t: "[OK] Firewall bypassed. Injecting Predictor v5.1...", type: "ok", d: 1200 },
-            { t: "[WARN] Scanning wallet for algorithm sync...", type: "warn", d: 2000 },
-            { t: "[ERR] FATAL ERROR: Wallet balance is 0.00 PHP", type: "err", d: 1000 },
-            { t: "[ERR] Synchronization rejected by main server.", type: "err", d: 800 },
-            { t: "[SYS] Positive balance (Min. 350 PHP) required to proceed.", type: "sys", d: 1000 }
-        ];
+        // Функция, скрывающая ошибку, когда человек снова начинает вводить цифры
+        function hideError() {
+            document.getElementById('accId').classList.remove('error');
+            document.getElementById('errorMsg').style.display = 'none';
+        }
 
         function startSync() {
-            const accId = document.getElementById('accId').value;
-            if(!accId) {
-                alert("Bro, enter your Account ID first!");
-                return;
+            const accIdInput = document.getElementById('accId');
+            const accId = accIdInput.value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Жесткая проверка: ровно ли 10 цифр?
+            if(accId.length !== 10) {
+                accIdInput.classList.add('error');
+                errorMsg.style.display = 'block';
+                return; // Останавливаем код, пока он не введет 10 цифр
             }
 
-            // Переключаем экраны
+            // Если всё окей, запускаем терминал
             document.getElementById('step-1').classList.remove('active-screen');
             document.getElementById('step-2').classList.add('active-screen');
 
             const terminal = document.getElementById('terminal');
             let time = 0;
 
+            const logs = [
+                { t: `[SYS] Connecting Account ID: ${accId}...`, type: "sys", d: 800 },
+                { t: "[OK] Server ping response: 18ms", type: "ok", d: 600 },
+                { t: "[SYS] Bypassing 1xBet API firewalls...", type: "sys", d: 1500 },
+                { t: "[OK] Firewall bypassed. Injecting Predictor v5.1...", type: "ok", d: 1200 },
+                { t: "[WARN] Scanning wallet for algorithm sync...", type: "warn", d: 2000 },
+                { t: "[ERR] FATAL ERROR: Wallet balance is 0.00 PHP", type: "err", d: 1000 },
+                { t: "[ERR] Synchronization rejected by main server.", type: "err", d: 800 },
+                { t: "[SYS] Positive balance (Min. 350 PHP) required to proceed.", type: "sys", d: 1000 }
+            ];
+
             logs.forEach((log, index) => {
                 time += log.d;
                 setTimeout(() => {
                     terminal.innerHTML += `<div class="log ${log.type}">${log.t}</div>`;
-                    terminal.scrollTop = terminal.scrollHeight; // Скролл вниз
+                    terminal.scrollTop = terminal.scrollHeight;
 
-                    // Если это последний лог, ждем 2 секунды и показываем экран депозита
                     if(index === logs.length - 1) {
                         setTimeout(() => {
                             document.getElementById('step-2').classList.remove('active-screen');
