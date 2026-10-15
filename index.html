@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Activation | VIP Predictor PH</title>
-    <!-- Подключаем красивые шрифты -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>VIP Predictor | AI Server</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background-color: #0f1115; /* Глубокий темный фон */
+            background-color: #0d0f12;
             color: #ffffff;
+            font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,178 +24,286 @@
             padding: 20px;
         }
 
-        .card {
-            background: #1a1d24;
+        /* КОНТЕЙНЕР ДЛЯ ВСЕХ ЭКРАНОВ */
+        .screen {
+            display: none;
             width: 100%;
-            max-width: 420px;
-            border-radius: 20px;
-            padding: 30px 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .active-screen {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ЭКРАН 1: ВЫБОР ПЛАТФОРМЫ --- */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #00ff88; }
+        .header p { color: #8b92a5; font-size: 14px; }
+
+        .platform-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .platform-card {
+            background: #1a1d24;
             border: 1px solid #2a2d35;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .platform-card.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .platform-card.locked {
+            opacity: 0.5;
+            filter: grayscale(100%);
+            cursor: not-allowed;
+        }
+
+        .platform-name { font-weight: 600; font-size: 16px; }
+        
+        .status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
+        .status.online { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        .status.offline { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; color: #8b92a5; margin-bottom: 8px; }
+        
+        input {
+            width: 100%;
+            background: #111318;
+            border: 1px solid #333845;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
             text-align: center;
         }
+        input:focus { border-color: #00ff88; }
 
-        .icon-container {
-            width: 70px;
-            height: 70px;
-            background: rgba(0, 255, 136, 0.1);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px;
-        }
-
-        .icon-container svg {
-            width: 35px;
-            height: 35px;
-            fill: #00ff88;
-        }
-
-        h1 {
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        p.subtitle {
-            color: #8b92a5;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
-
-        .balance-box {
-            background: #111318;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px dashed #333845;
-        }
-
-        .balance-box p {
-            color: #8b92a5;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .balance-box h2 {
-            font-size: 28px;
-            color: #ff4757; /* Красный цвет, показывающий, что баланс пуст */
-            font-weight: 800;
-        }
-
-        .info-box {
-            background: rgba(0, 168, 255, 0.1);
-            border-left: 4px solid #00a8ff;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: left;
-            margin-bottom: 25px;
-        }
-
-        .info-box p {
-            color: #d1d8e0;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .info-box b {
-            color: #fff;
-        }
-
-        .payment-methods {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        .method {
-            background: #222630;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #a4b0be;
-            border: 1px solid #2a2d35;
-        }
-
-        .method.gcash { color: #007bff; border-color: #007bff; }
-        .method.maya { color: #2ed573; border-color: #2ed573; }
-
-        .btn-primary {
-            display: block;
+        .btn {
             width: 100%;
             background: linear-gradient(135deg, #00ff88 0%, #00b35f 100%);
             color: #000;
-            padding: 18px;
+            padding: 16px;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 10px;
             font-weight: 800;
+            font-size: 16px;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-decoration: none;
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
-            animation: pulse 2s infinite;
         }
 
-        .btn-primary:active {
-            transform: translateY(2px);
+        /* --- ЭКРАН 2: ТЕРМИНАЛ (ЛОГИ) --- */
+        .terminal-container {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            box-shadow: inset 0 0 20px rgba(0,255,0,0.1);
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(0, 255, 136, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        .log { margin-bottom: 6px; line-height: 1.4; }
+        .log.sys { color: #00ccff; }
+        .log.ok { color: #00ff00; }
+        .log.warn { color: #ffcc00; }
+        .log.err { color: #ff3333; font-weight: bold; }
+
+        /* --- ЭКРАН 3: ОШИБКА ДЕПОЗИТА --- */
+        .card {
+            background: #1a1d24;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 1px solid #333845;
         }
 
-        .footer-text {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #57606f;
+        .error-icon {
+            width: 60px; height: 60px;
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            font-size: 30px;
+            line-height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            font-weight: bold;
+        }
+
+        .card h2 { color: #ff4757; font-size: 20px; margin-bottom: 10px; }
+        
+        .balance-box {
+            background: #111318;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px dashed #444;
+        }
+        .balance-box span { color: #8b92a5; font-size: 12px; text-transform: uppercase; }
+        .balance-box h3 { color: #ff4757; font-size: 26px; margin-top: 5px; }
+
+        .instruction {
+            background: rgba(0, 168, 255, 0.1);
+            border-left: 3px solid #00a8ff;
+            padding: 15px;
+            font-size: 13px;
+            color: #d1d8e0;
+            text-align: left;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .methods {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .method {
+            background: #222630; padding: 6px 12px; border-radius: 6px;
+            font-size: 11px; font-weight: bold; color: #a4b0be;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <!-- Иконка щита/безопасности -->
-        <div class="icon-container">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-            </svg>
+    <!-- ЭКРАН 1: ВЫБОР И ID -->
+    <div class="screen active-screen" id="step-1">
+        <div class="header">
+            <h1>PREDICTOR API</h1>
+            <p>Select platform and enter Account ID</p>
         </div>
 
-        <h1>System Activation</h1>
-        <p class="subtitle">Account successfully linked to Predictor API. Please add starting capital to activate the bot.</p>
-
-        <div class="balance-box">
-            <p>Current 1xBet Balance</p>
-            <h2>₱ 0.00</h2>
+        <div class="platform-grid">
+            <div class="platform-card active">
+                <div class="platform-name">1xBet</div>
+                <div class="status online">ONLINE</div>
+            </div>
+            <div class="platform-card locked">
+                <div class="platform-name">Melbet</div>
+                <div class="status offline">UPDATE</div>
+            </div>
+            <div class="platform-card locked">
+                <div class="platform-name">Megapari</div>
+                <div class="status offline">UPDATE</div>
+            </div>
         </div>
 
-        <div class="info-box">
-            <p>To finalize the server sync, a minimum starting capital of <b>₱350.00</b> is required. The system cannot process empty accounts.</p>
+        <div class="input-group">
+            <label>1xBet Account ID</label>
+            <input type="number" id="accId" placeholder="e.g. 54329184">
         </div>
 
-        <div class="payment-methods">
-            <div class="method gcash">GCash</div>
-            <div class="method maya">Maya</div>
-            <div class="method">Bank Transfer</div>
-        </div>
-
-        <!-- Сюда вставь ссылку на свою платежку / реквизиты или инструкцию -->
-        <a href="#" class="btn-primary">CASH IN NOW</a>
-
-        <p class="footer-text">Protected by 256-bit SSL Encryption. 100% Secure.</p>
+        <button class="btn" onclick="startSync()">CONNECT</button>
     </div>
 
+
+    <!-- ЭКРАН 2: ХАКЕРСКИЙ ТЕРМИНАЛ -->
+    <div class="screen" id="step-2">
+        <div class="header">
+            <h1>SYNC IN PROGRESS...</h1>
+            <p>Do not close this window</p>
+        </div>
+        <div class="terminal-container" id="terminal">
+            <!-- Логи появляются тут -->
+        </div>
+    </div>
+
+
+    <!-- ЭКРАН 3: ОШИБКА И ИНСТРУКЦИЯ ПОПОЛНЕНИЯ -->
+    <div class="screen" id="step-3">
+        <div class="card">
+            <div class="error-icon">!</div>
+            <h2>CONNECTION FAILED</h2>
+            <p style="color: #8b92a5; font-size: 14px;">The system blocked the synchronization due to empty wallet.</p>
+
+            <div class="balance-box">
+                <span>Current 1xBet Balance</span>
+                <h3>₱ 0.00</h3>
+            </div>
+
+            <div class="instruction">
+                <b>Action Required:</b><br><br>
+                The Predictor AI needs a starting capital to latch onto the betting algorithm. You must <b>cash in a minimum of ₱350</b> to your 1xBet account.
+            </div>
+
+            <div class="methods">
+                <div class="method" style="color: #007bff;">GCash</div>
+                <div class="method" style="color: #2ed573;">Maya</div>
+                <div class="method">Bank</div>
+            </div>
+
+            <!-- ВСТАВЬ СЮДА СВОЮ ССЫЛКУ ИЛИ ОСТАВЬ ТАК -->
+            <button class="btn" onclick="window.location.href='https://1xbet.ph/'">CASH IN NOW</button>
+        </div>
+    </div>
+
+
+    <script>
+        const logs = [
+            { t: "[SYS] Initializing server connection (Asia/Manila)...", type: "sys", d: 800 },
+            { t: "[OK] Server ping response: 18ms", type: "ok", d: 600 },
+            { t: "[SYS] Verifying Account ID...", type: "sys", d: 1000 },
+            { t: "[OK] Account located. Status: ACTIVE", type: "ok", d: 800 },
+            { t: "[SYS] Bypassing 1xBet API firewalls...", type: "sys", d: 1500 },
+            { t: "[OK] Firewall bypassed. Injecting Predictor v5.1...", type: "ok", d: 1200 },
+            { t: "[WARN] Scanning wallet for algorithm sync...", type: "warn", d: 2000 },
+            { t: "[ERR] FATAL ERROR: Wallet balance is 0.00 PHP", type: "err", d: 1000 },
+            { t: "[ERR] Synchronization rejected by main server.", type: "err", d: 800 },
+            { t: "[SYS] Positive balance (Min. 350 PHP) required to proceed.", type: "sys", d: 1000 }
+        ];
+
+        function startSync() {
+            const accId = document.getElementById('accId').value;
+            if(!accId) {
+                alert("Bro, enter your Account ID first!");
+                return;
+            }
+
+            // Переключаем экраны
+            document.getElementById('step-1').classList.remove('active-screen');
+            document.getElementById('step-2').classList.add('active-screen');
+
+            const terminal = document.getElementById('terminal');
+            let time = 0;
+
+            logs.forEach((log, index) => {
+                time += log.d;
+                setTimeout(() => {
+                    terminal.innerHTML += `<div class="log ${log.type}">${log.t}</div>`;
+                    terminal.scrollTop = terminal.scrollHeight; // Скролл вниз
+
+                    // Если это последний лог, ждем 2 секунды и показываем экран депозита
+                    if(index === logs.length - 1) {
+                        setTimeout(() => {
+                            document.getElementById('step-2').classList.remove('active-screen');
+                            document.getElementById('step-3').classList.add('active-screen');
+                        }, 2500);
+                    }
+                }, time);
+            });
+        }
+    </script>
 </body>
 </html>
